@@ -182,3 +182,13 @@
     border-right-color: var(--border);
   }
 }
+
+/* Título de la página del carrito */
+.cart-title {
+  color: #000000;
+}
+
+/* Nombre de la pizza en la página de detalle */
+.pizza-title {
+  color: #000000;
+}
