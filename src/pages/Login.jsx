@@ -6,34 +6,48 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [feedback, setFeedback] = useState(null);
   const { login } = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (event) => {
+  event.preventDefault();
 
-    if (email.trim() === "" || password === "") {
-      setFeedback({
-        type: "danger",
-        message: "Todos los campos son obligatorios.",
-      });
-      return;
-    }
+  if (loading) return;
 
-    if (password.length < 6) {
-      setFeedback({
-        type: "danger",
-        message: "La contraseña debe tener al menos 6 caracteres.",
-      });
-      return;
-    }
+  setFeedback(null);
 
+  if (email.trim() === "" || password === "") {
     setFeedback({
-      type: "success",
-      message: "¡Inicio de sesión exitoso!",
+      type: "danger",
+      message: "Todos los campos son obligatorios.",
     });
-    login();
-    setEmail("");
-    setPassword("");
-  };
+    return;
+  }
+
+  if (password.length < 6) {
+    setFeedback({
+      type: "danger",
+      message:
+        "La contraseña debe tener al menos 6 caracteres.",
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    await login({
+      email: email.trim(),
+      password,
+    });
+  } catch (error) {
+    setFeedback({
+      type: "danger",
+      message: error.message,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <section className="auth-section">
@@ -85,8 +99,9 @@ const Login = () => {
             <button
               type="submit"
               className="btn btn-mamma w-100 py-2 fw-semibold"
+              disabled={loading}
             >
-              Ingresar
+              {loading ? "Ingresando..." : "Ingresar"}
             </button>
           </form>
 

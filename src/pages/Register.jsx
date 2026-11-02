@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { UserContext } from "../context/UserContext.jsx";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -7,47 +8,60 @@ const Register = () => {
     useState("");
 
   const [feedback, setFeedback] = useState(null);
+  const { register } = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async (event) => {
+  event.preventDefault();
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  if (loading) return;
 
-    if (
-      email.trim() === "" ||
-      password === "" ||
-      passwordConfirmation === ""
-    ) {
-      setFeedback({
-        type: "danger",
-        message: "Todos los campos son obligatorios.",
-      });
-      return;
-    }
+  setFeedback(null);
 
-    if (password.length < 6) {
-      setFeedback({
-        type: "danger",
-        message: "La contraseña debe tener al menos 6 caracteres.",
-      });
-      return;
-    }
-
-    if (password !== passwordConfirmation) {
-      setFeedback({
-        type: "danger",
-        message: "Las contraseñas no coinciden.",
-      });
-      return;
-    }
-
+  if (
+    email.trim() === "" ||
+    password === "" ||
+    passwordConfirmation === ""
+  ) {
     setFeedback({
-      type: "success",
-      message: "¡Registro realizado exitosamente!",
+      type: "danger",
+      message: "Todos los campos son obligatorios.",
     });
+    return;
+  }
 
-    setEmail("");
-    setPassword("");
-    setPasswordConfirmation("");
-  };
+  if (password.length < 6) {
+    setFeedback({
+      type: "danger",
+      message:
+        "La contraseña debe tener al menos 6 caracteres.",
+    });
+    return;
+  }
+
+  if (password !== passwordConfirmation) {
+    setFeedback({
+      type: "danger",
+      message: "Las contraseñas no coinciden.",
+    });
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    await register({
+      email: email.trim(),
+      password,
+    });
+  } catch (error) {
+    setFeedback({
+      type: "danger",
+      message: error.message,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <section className="auth-section">
@@ -123,8 +137,9 @@ const Register = () => {
             <button
               type="submit"
               className="btn btn-mamma w-100 py-2 fw-semibold"
+              disabled={loading}
             >
-              Registrarme
+              {loading ? "Registrando..." : "Registrarme"}
             </button>
           </form>
 

@@ -1,5 +1,5 @@
 import { useContext, useState} from "react";
-
+import { apiRequest } from "../services/api.js";
 import { CartContext } from "../context/CartContext.jsx";
 import { UserContext } from "../context/UserContext.jsx";
 import { formatCurrency } from "../utils/formatCurrency.js";
@@ -15,21 +15,62 @@ const Cart = () => {
     clearCart,
   } = useContext(CartContext);
 
-  const { token } = useContext(UserContext);
+  const { token, logout } = useContext(UserContext);
   const [feedback, setFeedback] = useState(null);
+  const [paying, setPaying] = useState(false);
   
-  const handlePay = (event) => {
-    event.preventDefault();
-    if (!token || cart.length === 0) {
-      return;
-    }
+  const handlePay = async (event) => {
+  event.preventDefault();
+
+  if (paying) return;
+
+  setFeedback(null);
+
+  if (!token) {
+    setFeedback({
+      type: "danger",
+      message: "Debes iniciar sesión para pagar.",
+    });
+    return;
+  }
+
+  if (cart.length === 0) {
+    setFeedback({
+      type: "danger",
+      message: "Agrega productos antes de pagar.",
+    });
+    return;
+  }
+
+  try {
+    setPaying(true);
+
+    await apiRequest("/checkouts", {
+      method: "POST",
+      token,
+      body: { cart },
+    });
 
     clearCart();
+
     setFeedback({
       type: "success",
-      message: "¡Pago exitoso! ¡Tu carrito de compras ha sido vaciado para tu proxima compra!",
+      message:
+        "¡Compra realizada con éxito! Tu carrito fue vaciado.",
     });
-    };
+  } catch (error) {
+    if (error.status === 401) {
+      logout();
+    }
+
+    setFeedback({
+      type: "danger",
+      message: error.message,
+    });
+  } finally {
+    setPaying(false);
+  }
+};
 
 
   return (
@@ -74,6 +115,7 @@ const Cart = () => {
                 className="btn btn-outline-danger"
                 aria-label={`Disminuir cantidad de pizza ${pizza.name}`}
                 onClick={() => decreaseQuantity(pizza.id)}
+                disabled={paying}
               >
                 −
               </button>
@@ -85,6 +127,7 @@ const Cart = () => {
                 className="btn btn-outline-primary"
                 aria-label={`Aumentar cantidad de pizza ${pizza.name}`}
                 onClick={() => addToCart(pizza)}
+                disabled={paying}
               >
                 +
               </button>
@@ -99,6 +142,7 @@ const Cart = () => {
                 className="btn btn-outline-secondary"
                 aria-label={`Eliminar pizza ${pizza.name} del carrito`}
                 onClick={() => removeFromCart(pizza.id)}
+                disabled={paying}
               >
                 Eliminar
               </button>
@@ -113,9 +157,9 @@ const Cart = () => {
           <button
             type="submit"
             className="btn btn-success mt-3"
-            disabled={!token || cart.length === 0}
+            disabled={!token || cart.length === 0 || paying}
           >
-            Pagar
+            {paying ? "Procesando..." : "Pagar"}
           </button>
 
     {!token && (
