@@ -307,22 +307,6 @@ Con ambos servidores activos:
 
 En las herramientas del navegador, sección **Network / Red**, verifica las peticiones de autenticación, el header `Authorization` del perfil y checkout, y el cuerpo `{ cart: [...] }` de la compra.
 
-## Cobertura de la rúbrica
-
-| Requisito del Hito 8 | Implementación | Puntaje |
-| --- | --- | ---: |
-| Login y registro mediante API, almacenando token y email. | `UserProvider.jsx` | 2 |
-| Logout elimina token y email. | `logout()` | 1 |
-| Obtener perfil mediante `/api/auth/me`. | `getProfile()` | 1 |
-| Login y Register utilizan los métodos del contexto. | `Login.jsx` y `Register.jsx` | 2 |
-| Perfil muestra email y botón para cerrar sesión. | `Profile.jsx` | 1 |
-| Logout del navbar cierra sesión. | `Navigation.jsx` | 1 |
-| Carrito enviado mediante `/api/checkouts`. | `handlePay()` en `Cart.jsx` | 1 |
-| Mensaje de éxito después de comprar. | `feedback` en `Cart.jsx` | 1 |
-| **Total de la rúbrica** | | **10** |
-
-Esta tabla relaciona los requisitos con el código; el resultado debe comprobarse mediante las pruebas indicadas.
-
 ## Alcance y persistencia
 
 - El token, el email y el carrito se mantienen en memoria. Una recarga completa cierra la sesión local y vacía el carrito.
